@@ -5,5 +5,4 @@ tensorflow
 keras
 matplotlib
 pandas
-numpy
-
+numpy<2.0
