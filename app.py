@@ -100,6 +100,8 @@ plt.ylabel("Price")
 plt.legend()
 st.pyplot(fig4)
 
+from datetime import timedelta
+
 # ---------- Future Forecast ----------
 st.markdown("## 🔮 Future Forecast (Next 30 Days)")
 
@@ -116,13 +118,20 @@ for _ in range(30):
     future_predictions.append(pred[0][0])
     future_input.append([pred[0][0]])
 
-future_predictions = np.array(future_predictions) * scale
+# Convert predictions to original scale
+future_predictions = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1)).flatten()
 
-# Plot Future Forecast
-fig5 = plt.figure(figsize=(10, 4))
-plt.plot(future_predictions, marker='o', linestyle='--', label="Forecast")
-plt.title("📆 Next 30 Days Forecast")
-plt.xlabel("Days Ahead")
+# Dates + Plotting
+last_actual_price = data.Close.iloc[-1]
+full_forecast = np.concatenate([[last_actual_price], future_predictions])
+last_date = data.index[-1]
+forecast_dates = [last_date + timedelta(days=i) for i in range(0, 31)]
+
+fig5 = plt.figure(figsize=(12, 5))
+plt.plot(forecast_dates, full_forecast, marker='o', linestyle='--', label="Forecast", color='orange')
+plt.title("📆 Next 30 Days Forecast (with Dates)")
+plt.xlabel("Date")
 plt.ylabel("Predicted Price")
+plt.xticks(rotation=45)
 plt.legend()
 st.pyplot(fig5)
