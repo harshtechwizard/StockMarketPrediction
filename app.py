@@ -6,7 +6,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.metrics import mean_squared_error, mean_absolute_error, r2_score
-from datetime import date
+from datetime import date, timedelta
 import glob
 
 # Streamlit UI setup
@@ -15,7 +15,6 @@ st.title('📈 Stock Market Price Predictor')
 
 # ---------- Scan for available .keras models ----------
 model_files = glob.glob("*.keras")
-
 if not model_files:
     st.error("❌ No trained models found. Please train a model first.")
     st.stop()
@@ -40,7 +39,7 @@ start = st.sidebar.date_input("📅 Start Date", date(2012, 1, 1))
 end = st.sidebar.date_input("📅 End Date", date(2022, 12, 31))
 
 # ---------- Download stock data ----------
-data = yf.download(stock, start, end)
+data = yf.download(stock, start, end, auto_adjust=False)
 st.subheader(f'📊 Stock Data for {stock}')
 st.dataframe(data.tail())
 
@@ -100,8 +99,6 @@ plt.ylabel("Price")
 plt.legend()
 st.pyplot(fig4)
 
-from datetime import timedelta
-
 # ---------- Future Forecast ----------
 st.markdown("## 🔮 Future Forecast (Next 30 Days)")
 
@@ -112,18 +109,17 @@ future_input = full_scaled[-100:].tolist()
 future_predictions = []
 
 for _ in range(30):
-    current_input = np.array(future_input[-100:])
-    current_input = current_input.reshape(1, 100, 1)
+    current_input = np.array(future_input[-100:]).reshape(1, 100, 1)
     pred = model.predict(current_input, verbose=0)
     future_predictions.append(pred[0][0])
     future_input.append([pred[0][0]])
 
 # Convert predictions to original scale
-future_predictions = scaler.inverse_transform(np.array(future_predictions).reshape(-1, 1)).flatten()
+future_predictions = np.array(future_predictions).reshape(-1)
+last_actual_price = data.Close.iloc[-1]
+full_forecast = np.concatenate(([last_actual_price], future_predictions))
 
 # Dates + Plotting
-last_actual_price = data.Close.iloc[-1]
-full_forecast = np.concatenate((np.array([last_actual_price]), np.array(future_predictions)))
 last_date = data.index[-1]
 forecast_dates = [last_date + timedelta(days=i) for i in range(0, 31)]
 
