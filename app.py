@@ -117,7 +117,7 @@ for _ in range(30):
 # Convert predictions to original scale
 future_predictions = np.array(future_predictions).reshape(-1)
 last_actual_price = data.Close.iloc[-1]
-full_forecast = np.concatenate(([last_actual_price], future_predictions))
+full_forecast = np.concatenate((np.array([last_actual_price]).ravel(), future_predictions))
 
 # Dates + Plotting
 last_date = data.index[-1]
