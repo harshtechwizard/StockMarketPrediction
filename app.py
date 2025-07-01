@@ -123,7 +123,7 @@ future_predictions = scaler.inverse_transform(np.array(future_predictions).resha
 
 # Dates + Plotting
 last_actual_price = data.Close.iloc[-1]
-full_forecast = np.concatenate([[last_actual_price], future_predictions])
+full_forecast = np.concatenate((np.array([last_actual_price]), np.array(future_predictions)))
 last_date = data.index[-1]
 forecast_dates = [last_date + timedelta(days=i) for i in range(0, 31)]
 
