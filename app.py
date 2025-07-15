@@ -19,13 +19,30 @@ if not model_files:
     st.error("❌ No trained models found. Please train a model first.")
     st.stop()
 
-# ---------- Sidebar ----------
-st.sidebar.header("🔧 Settings")
+# Helper to extract model type from filename
+model_labels = []
+model_types = []
 
-# Select model file
-selected_model_file = st.sidebar.selectbox("🧠 Select Trained Model", model_files)
+for f in model_files:
+    if f.strip().lower() == "stock predictions model.keras":
+        model_labels.append(f"LSTM: {f}")
+        model_types.append("LSTM")
+    elif f.strip().lower() == "gru_model.keras":
+        model_labels.append(f"GRU: {f}")
+        model_types.append("GRU")
+    else:
+        model_labels.append(f"Unknown: {f}")
+        model_types.append("Unknown")
+
+selected_label = st.sidebar.selectbox("🧠 Select Trained Model", model_labels)
+selected_index = model_labels.index(selected_label)
+selected_model_file = model_files[selected_index]
+selected_model_type = model_types[selected_index]
 model = load_model(selected_model_file)
 st.sidebar.success(f"Model Loaded: {selected_model_file}")
+
+# Info box for model type
+st.sidebar.info(f"**Model Type:** {selected_model_type}")
 
 # Stock input
 stock = st.sidebar.selectbox(
@@ -99,35 +116,35 @@ plt.ylabel("Price")
 plt.legend()
 st.pyplot(fig4)
 
-# ---------- Future Forecast ----------
-st.markdown("## 🔮 Future Forecast (Next 30 Days)")
+# # ---------- Future Forecast ----------
+# st.markdown("## 🔮 Future Forecast (Next 30 Days)")
 
-full_data = pd.concat([data_train, data_test], ignore_index=True)
-full_scaled = scaler.fit_transform(full_data)
+# full_data = pd.concat([data_train, data_test], ignore_index=True)
+# full_scaled = scaler.fit_transform(full_data)
 
-future_input = full_scaled[-100:].tolist()
-future_predictions = []
+# future_input = full_scaled[-100:].tolist()
+# future_predictions = []
 
-for _ in range(30):
-    current_input = np.array(future_input[-100:]).reshape(1, 100, 1)
-    pred = model.predict(current_input, verbose=0)
-    future_predictions.append(pred[0][0])
-    future_input.append([pred[0][0]])
+# for _ in range(30):
+#     current_input = np.array(future_input[-100:]).reshape(1, 100, 1)
+#     pred = model.predict(current_input, verbose=0)
+#     future_predictions.append(pred[0][0])
+#     future_input.append([pred[0][0]])
 
-# Convert predictions to original scale
-future_predictions = np.array(future_predictions).reshape(-1)
-last_actual_price = data.Close.iloc[-1]
-full_forecast = np.concatenate((np.array([last_actual_price]).ravel(), future_predictions))
+# # Convert predictions to original scale
+# future_predictions = np.array(future_predictions).reshape(-1)
+# last_actual_price = data.Close.iloc[-1]
+# full_forecast = np.concatenate((np.array([last_actual_price]).ravel(), future_predictions))
 
-# Dates + Plotting
-last_date = data.index[-1]
-forecast_dates = [last_date + timedelta(days=i) for i in range(0, 31)]
+# # Dates + Plotting
+# last_date = data.index[-1]
+# forecast_dates = [last_date + timedelta(days=i) for i in range(0, 31)]
 
-fig5 = plt.figure(figsize=(12, 5))
-plt.plot(forecast_dates, full_forecast, marker='o', linestyle='--', label="Forecast", color='orange')
-plt.title("📆 Next 30 Days Forecast (with Dates)")
-plt.xlabel("Date")
-plt.ylabel("Predicted Price")
-plt.xticks(rotation=45)
-plt.legend()
-st.pyplot(fig5)
+# fig5 = plt.figure(figsize=(12, 5))
+# plt.plot(forecast_dates, full_forecast, marker='o', linestyle='--', label="Forecast", color='orange')
+# plt.title("📆 Next 30 Days Forecast (with Dates)")
+# plt.xlabel("Date")
+# plt.ylabel("Predicted Price")
+# plt.xticks(rotation=45)
+# plt.legend()
+# st.pyplot(fig5)
