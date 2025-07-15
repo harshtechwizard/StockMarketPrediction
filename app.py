@@ -24,12 +24,13 @@ model_labels = []
 model_types = []
 
 for f in model_files:
-    if f.strip().lower() == "stock predictions model.keras":
-        model_labels.append(f"LSTM: {f}")
-        model_types.append("LSTM")
-    elif f.strip().lower() == "gru_model.keras":
+    fname = f.strip().lower()
+    if "gru" in fname:
         model_labels.append(f"GRU: {f}")
         model_types.append("GRU")
+    elif "lstm" in fname or f.strip().lower() == "stock predictions model.keras":
+        model_labels.append(f"LSTM: {f}")
+        model_types.append("LSTM")
     else:
         model_labels.append(f"Unknown: {f}")
         model_types.append("Unknown")
